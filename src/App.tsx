@@ -8,9 +8,11 @@ import { AuthGuard, GuestGuard } from '@/components/auth/AuthGuard'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { LoginPage } from '@/pages/LoginPage'
 import { SignupPage } from '@/pages/SignupPage'
+import { AuthCallbackPage } from '@/pages/AuthCallbackPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { ExpensesPage } from '@/pages/ExpensesPage'
 import { SettingsPage } from '@/pages/SettingsPage'
+import { CategoriesPage } from '@/pages/CategoriesPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -86,6 +88,9 @@ function App() {
             }
           />
 
+          {/* OAuth callback -- not wrapped in any guard */}
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
+
           {/* Protected routes wrapped in AppLayout */}
           <Route
             element={
@@ -97,6 +102,7 @@ function App() {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/expenses" element={<ExpensesPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/categories" element={<CategoriesPage />} />
           </Route>
 
           {/* Fallback */}
