@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Menu, LogOut, User } from 'lucide-react'
+import { Menu, LogOut, User, Sun, Moon } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Receipt, Settings } from 'lucide-react'
+import { LayoutDashboard, Receipt, Settings, Tag } from 'lucide-react'
+import { useThemeStore } from '@/stores/themeStore'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -17,6 +18,7 @@ import { cn } from '@/lib/utils'
 const NAV_ITEMS = [
   { label: 'Painel', path: '/', icon: LayoutDashboard },
   { label: 'Despesas', path: '/expenses', icon: Receipt },
+  { label: 'Categorias', path: '/categories', icon: Tag },
   { label: 'Configuracoes', path: '/settings', icon: Settings },
 ]
 
@@ -32,6 +34,7 @@ function getInitials(name: string): string {
 export function Header() {
   const { profile, signOut } = useAuth()
   const [sheetOpen, setSheetOpen] = useState(false)
+  const { resolvedTheme, setTheme } = useThemeStore()
 
   const initials = profile?.display_name ? getInitials(profile.display_name) : 'U'
 
@@ -74,6 +77,13 @@ export function Header() {
               <User className="h-4 w-4" />
               Perfil
             </NavLink>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="gap-2"
+            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+          >
+            {resolvedTheme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {resolvedTheme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="gap-2 text-destructive" onClick={signOut}>
