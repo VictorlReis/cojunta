@@ -1,162 +1,91 @@
-# Claude Code Agent Setup
+# Cojunta
 
-A template for setting up Claude Code (agents, skills, memory) in any project. Use it to bootstrap a new repo or add Claude to an existing one.
+Aplicativo de controle financeiro para casais. Gerencie gastos individuais e compartilhados, visualize evolução mensal e conecte-se com seu parceiro(a) através de um sistema de convites.
 
-## Creating a New Project
+## Funcionalidades (Fase 1)
 
-Use this repo as a GitHub template to start a new project with Claude Code pre-configured:
+- **Autenticação** — email/senha e Google OAuth
+- **Sistema de parceria** — envio e aceite de convites dentro do app para vincular dois usuários
+- **Controle de gastos** — criar, editar e excluir despesas com categorias predefinidas
+- **Visualizações** — alternar entre meus gastos, gastos compartilhados e todos
+- **Dashboard** — cards de resumo mensal + gráfico de pizza por categoria + linha de tendência dos últimos 6 meses
+- **Perfil e configurações** — editar nome, gerenciar parceria
 
-1. Click **"Use this template"** → **"Create a new repository"** on GitHub
-2. Clone your new repo and start working:
-   ```bash
-   git clone git@github.com:you/your-new-project.git
-   cd your-new-project
-   claude login   # authenticate with your Max/Pro subscription
-   claude          # start coding
-   ```
+## Stack
 
-Everything is ready out of the box — agents, skills, and settings are already in place. Add your project code and go.
+- **Frontend:** React + Vite + TypeScript
+- **UI:** Tailwind CSS v4 + shadcn/ui
+- **Gráficos:** Recharts
+- **Backend:** Supabase (auth, banco de dados, RLS)
+- **Estado:** Zustand + TanStack Query
+- **Roteamento:** React Router v6
 
-## Adding Claude to an Existing Project
+## Como rodar
 
-### Option A: Setup script (recommended)
-
-The interactive setup script copies template files into your project and lets you pick what to include:
-
-```bash
-# Clone this template somewhere
-git clone git@github.com:nickmaglowsch/claude-setup.git /tmp/claude-setup
-
-# Run the setup script pointing at your project
-/tmp/claude-setup/setup.sh /path/to/your/project
-```
-
-The script will:
-- Copy `.claude/` (agents, skills, settings) — always included
-- Optionally add `.devcontainer/` for containerized development
-- Optionally add `run-claude.sh` for headless/automation mode
-- Update your `.gitignore` with the right entries
-
-### Option B: Manual copy
-
-If you just want the core Claude Code setup:
+### 1. Instalar dependências
 
 ```bash
-# Copy the .claude directory into your project
-cp -r /tmp/claude-setup/.claude/ /path/to/your/project/.claude/
-
-# Optionally copy dev container support
-cp -r /tmp/claude-setup/.devcontainer/ /path/to/your/project/.devcontainer/
-cp /tmp/claude-setup/run-claude.sh /path/to/your/project/
+npm install
 ```
 
-### After setup
+### 2. Configurar variáveis de ambiente
+
+Copie o arquivo de exemplo e preencha com as credenciais do seu projeto Supabase:
 
 ```bash
-cd /path/to/your/project
-claude login    # authenticate with your Max/Pro subscription
-claude           # start coding
-
-# Or use the build pipeline with a PRD:
-# /build <paste your PRD>
+cp .env.local.example .env.local
 ```
 
-Review `.claude/settings.local.json` to adjust permissions for your project.
-
-## Directory Structure
-
-```
-.claude/
-├── agents/                  # Custom agent definitions
-│   ├── prd-task-planner.md      # Analyzes PRDs, explores codebase, generates task files
-│   ├── task-implementer.md      # Implements a single task from a task file
-│   ├── parallel-task-orchestrator.md  # Executes task files in parallel waves
-│   └── code-reviewer.md        # Reviews changes against PRD/spec
-├── skills/                  # User-invocable skills (slash commands)
-│   ├── build/SKILL.md           # /build — full pipeline: plan → implement → review
-│   └── craft-pr/SKILL.md       # /craft-pr — generates PR description from tasks + diff
-├── agent-memory/            # Persistent memory per agent (survives across sessions)
-└── settings.local.json      # Local Claude Code settings
+```env
+VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+VITE_SUPABASE_ANON_KEY=sua-anon-key
 ```
 
-## The Build Pipeline (`/build`)
+### 3. Configurar o banco de dados
 
-The `/build` skill orchestrates the full feature implementation lifecycle. Paste a PRD or feature spec and it handles everything.
-
-### How it works
+No [Supabase SQL Editor](https://supabase.com/dashboard), execute as migrations em ordem:
 
 ```
-PRD → [Plan] → [User Q&A] → [Implement] → [Review] → Done
+supabase/migrations/001_initial_schema.sql
+supabase/migrations/002_rls_policies.sql
+supabase/migrations/003_seed_categories.sql
 ```
 
-#### Step 1: Two-Phase Planning (with user input)
+### 4. (Opcional) Google OAuth
 
-The planning step is split into **discovery** and **generation** so the planner can ask you questions before committing to a plan.
+No painel do Supabase: **Authentication → Providers → Google** — adicione suas credenciais OAuth do Google Cloud Console.
 
-**Step 1a — Discovery**
-The `prd-task-planner` agent explores the codebase and writes `tasks/planning-questions.md` with:
-- A summary of what it found in the codebase (architecture, existing features, relevant code)
-- 3-8 questions about architectural decisions, scope, and integration choices that would materially change the plan
-
-**Step 1b — User Q&A**
-The build orchestrator reads the questions file and presents them to you interactively. You answer each question.
-
-**Step 1c — Generation**
-The same planner agent is **resumed** (keeping all its codebase exploration context) with your answers. It then generates:
-- `tasks/updated-prd.md` — the PRD refined with codebase context
-- `tasks/task-01-*.md`, `task-02-*.md`, ... — ordered, self-contained task files
-
-#### Step 2: Parallel Implementation
-
-The `parallel-task-orchestrator` reads all task files, builds a dependency graph, and spawns `task-implementer` agents in parallel waves.
-
-#### Step 3: Code Review
-
-The `code-reviewer` audits all changes against `tasks/updated-prd.md` and produces a compliance report.
-
-### Usage
-
-```
-/build <paste your PRD here>
-```
-
-Or reference a file:
-```
-/build $(cat path/to/prd.md)
-```
-
-### Running agents individually
-
-You can also invoke agents directly via the Task tool:
-
-```
-# Just plan (discovery + generate in one shot, no Q&A pause)
-Task: prd-task-planner — "Here's the PRD: ... Output tasks to tasks/"
-
-# Just implement
-Task: parallel-task-orchestrator — "Execute all tasks from tasks/"
-
-# Just review
-Task: code-reviewer — "Review changes against tasks/updated-prd.md"
-```
-
-When invoked directly (outside `/build`), the `prd-task-planner` runs all phases end-to-end without the Q&A pause. The two-phase flow only activates when the prompt includes `MODE: DISCOVERY` or `MODE: GENERATE`.
-
-## Agent Memory
-
-Each agent has persistent memory in `.claude/agent-memory/<agent-name>/`. Agents record codebase patterns, conventions, and insights they discover. This builds institutional knowledge across sessions — e.g., the planner remembers your project structure so future planning is faster.
-
-## Dev Container (Optional)
-
-Run Claude Code in an isolated Docker container — interactively via VS Code / Zed or headlessly via CLI. Supports running N containers on N branches simultaneously with no port collisions.
+### 5. Iniciar o servidor de desenvolvimento
 
 ```bash
-# VS Code / Zed: open the project, then reopen in container
-# Authenticate inside the container:
-claude login
-
-# Headless: spawn a container on a branch
-./run-claude.sh --branch feature-x --prompt "implement the feature"
+npm run dev
 ```
 
-See [`.devcontainer/README.md`](.devcontainer/README.md) for full documentation.
+## Estrutura do projeto
+
+```
+src/
+├── components/
+│   ├── auth/          # Login, signup, guards de rota
+│   ├── dashboard/     # Cards, gráficos (pizza, tendência)
+│   ├── expenses/      # Formulário, lista, filtros, dialogs
+│   ├── layout/        # AppLayout, sidebar, header, nav mobile
+│   ├── partnership/   # Convites, card do parceiro
+│   └── ui/            # Componentes shadcn/ui
+├── hooks/             # useExpenses, usePartnership, useDashboardData...
+├── lib/               # Supabase client, utilitários, constantes
+├── pages/             # DashboardPage, ExpensesPage, SettingsPage...
+├── stores/            # Zustand (auth)
+└── types/             # Tipos do banco e domínio
+supabase/
+└── migrations/        # SQL: schema, RLS policies, seed de categorias
+```
+
+## Roadmap — Fase 2
+
+- Categorias customizadas
+- Gastos recorrentes
+- Limites de orçamento por categoria
+- Exportação de dados (CSV/PDF)
+- Notificações
+- Relatórios avançados
