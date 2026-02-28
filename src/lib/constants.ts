@@ -6,6 +6,8 @@ export const ROUTES = {
   SIGNUP: '/signup',
   EXPENSES: '/expenses',
   SETTINGS: '/settings',
+  CATEGORIES: '/categories',
+  AUTH_CALLBACK: '/auth/callback',
 } as const
 
 export const MONTHS_PT = [

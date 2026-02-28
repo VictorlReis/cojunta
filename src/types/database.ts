@@ -66,16 +66,22 @@ export interface Database {
           name: string
           icon: string
           color: string
+          partnership_id: string | null
+          created_by: string | null
         }
         Insert: {
           name: string
           icon?: string
           color?: string
+          partnership_id: string
+          created_by: string
         }
         Update: {
           name?: string
           icon?: string
           color?: string
+          partnership_id?: string
+          created_by?: string
         }
       }
       expenses: {
@@ -122,6 +128,8 @@ export type Profile = Database['public']['Tables']['profiles']['Row']
 export type Partnership = Database['public']['Tables']['partnerships']['Row']
 export type Invitation = Database['public']['Tables']['invitations']['Row']
 export type Category = Database['public']['Tables']['categories']['Row']
+export type CategoryInsert = Database['public']['Tables']['categories']['Insert']
+export type CategoryUpdate = Database['public']['Tables']['categories']['Update']
 export type Expense = Database['public']['Tables']['expenses']['Row']
 
 export type ProfileInsert = Database['public']['Tables']['profiles']['Insert']
