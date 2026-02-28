@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Receipt, Settings, LogOut } from 'lucide-react'
+import { LayoutDashboard, Receipt, Settings, LogOut, Tag } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth'
 const NAV_ITEMS = [
   { label: 'Painel', path: '/', icon: LayoutDashboard },
   { label: 'Despesas', path: '/expenses', icon: Receipt },
+  { label: 'Categorias', path: '/categories', icon: Tag },
   { label: 'Configuracoes', path: '/settings', icon: Settings },
 ]
 

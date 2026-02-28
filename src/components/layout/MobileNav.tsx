@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, Receipt, Settings } from 'lucide-react'
+import { LayoutDashboard, Receipt, Settings, Tag } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const NAV_ITEMS = [
   { label: 'Painel', path: '/', icon: LayoutDashboard },
   { label: 'Despesas', path: '/expenses', icon: Receipt },
+  { label: 'Categorias', path: '/categories', icon: Tag },
   { label: 'Config.', path: '/settings', icon: Settings },
 ]
 
