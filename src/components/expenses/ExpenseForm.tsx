@@ -46,7 +46,7 @@ function todayDate(): string {
 }
 
 export function ExpenseForm({ open, onOpenChange, expense, onSubmit, isSubmitting }: ExpenseFormProps) {
-  const { data: categories = [] } = useCategories()
+  const { categories } = useCategories()
   const { isLinked } = usePartnership()
 
   const [description, setDescription] = useState('')

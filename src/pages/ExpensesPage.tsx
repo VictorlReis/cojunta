@@ -1,13 +1,17 @@
 import { useState, useMemo } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, Download, Upload } from 'lucide-react'
+import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { ExpenseFilters } from '@/components/expenses/ExpenseFilters'
 import { ExpenseList } from '@/components/expenses/ExpenseList'
 import { ExpenseForm } from '@/components/expenses/ExpenseForm'
 import { DeleteExpenseDialog } from '@/components/expenses/DeleteExpenseDialog'
+import { CsvImportDialog } from '@/components/expenses/CsvImportDialog'
 import { useExpenses } from '@/hooks/useExpenses'
 import { useAuth } from '@/hooks/useAuth'
 import { formatCurrency } from '@/lib/utils'
+import { exportExpensesToCsv } from '@/lib/csv'
 import type { Expense, Category, ExpenseInsert } from '@/types/database'
 
 export function ExpensesPage() {
@@ -17,6 +21,9 @@ export function ExpensesPage() {
   const [formOpen, setFormOpen] = useState(false)
   const [editingExpense, setEditingExpense] = useState<(Expense & { category: Category }) | null>(null)
   const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null)
+  const [importOpen, setImportOpen] = useState(false)
+
+  const queryClient = useQueryClient()
 
   const { expenses, isLoading, createExpense, updateExpense, deleteExpense } = useExpenses({
     month,
@@ -37,6 +44,16 @@ export function ExpensesPage() {
     setFormOpen(true)
   }
 
+  const handleExport = () => {
+    if (expenses.length === 0) {
+      toast.info('Nenhuma despesa para exportar.')
+      return
+    }
+    const filename = `cojunta-despesas-${year}-${String(month).padStart(2, '0')}.csv`
+    exportExpensesToCsv(expenses as (Expense & { category: Category })[], filename)
+    toast.success('Exportacao concluida!')
+  }
+
   const handleSubmit = async (data: Omit<ExpenseInsert, 'user_id'>) => {
     if (editingExpense) {
       await updateExpense.mutateAsync({ id: editingExpense.id, ...data })
@@ -52,10 +69,20 @@ export function ExpensesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Despesas</h1>
-        <Button onClick={handleOpenCreate} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Adicionar
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleExport} className="gap-2">
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">Exportar</span>
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setImportOpen(true)} className="gap-2">
+            <Upload className="h-4 w-4" />
+            <span className="hidden sm:inline">Importar</span>
+          </Button>
+          <Button onClick={handleOpenCreate} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Adicionar
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -107,6 +134,16 @@ export function ExpensesPage() {
           }
         }}
         isDeleting={deleteExpense.isPending}
+      />
+
+      {/* CSV Import dialog */}
+      <CsvImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onImportComplete={() => {
+          queryClient.invalidateQueries({ queryKey: ['expenses'] })
+          queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+        }}
       />
     </div>
   )
