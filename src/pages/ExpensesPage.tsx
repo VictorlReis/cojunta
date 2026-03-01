@@ -1,13 +1,20 @@
 import { useState, useMemo } from 'react'
-import { Plus, Download, Upload } from 'lucide-react'
+import { Plus, Download, Upload, ChevronDown, FileText, FileSpreadsheet } from 'lucide-react'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu'
 import { ExpenseFilters } from '@/components/expenses/ExpenseFilters'
 import { ExpenseList } from '@/components/expenses/ExpenseList'
 import { ExpenseForm } from '@/components/expenses/ExpenseForm'
 import { DeleteExpenseDialog } from '@/components/expenses/DeleteExpenseDialog'
 import { CsvImportDialog } from '@/components/expenses/CsvImportDialog'
+import { PdfImportDialog } from '@/components/expenses/PdfImportDialog'
 import { useExpenses } from '@/hooks/useExpenses'
 import { useAuth } from '@/hooks/useAuth'
 import { formatCurrency } from '@/lib/utils'
@@ -22,6 +29,7 @@ export function ExpensesPage() {
   const [editingExpense, setEditingExpense] = useState<(Expense & { category: Category }) | null>(null)
   const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null)
   const [importOpen, setImportOpen] = useState(false)
+  const [pdfImportOpen, setPdfImportOpen] = useState(false)
 
   const queryClient = useQueryClient()
 
@@ -74,10 +82,25 @@ export function ExpensesPage() {
             <Download className="h-4 w-4" />
             <span className="hidden sm:inline">Exportar</span>
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setImportOpen(true)} className="gap-2">
-            <Upload className="h-4 w-4" />
-            <span className="hidden sm:inline">Importar</span>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Upload className="h-4 w-4" />
+                <span className="hidden sm:inline">Importar</span>
+                <ChevronDown className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setImportOpen(true)}>
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                Importar CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setPdfImportOpen(true)}>
+                <FileText className="h-4 w-4 mr-2" />
+                Importar PDF Nubank
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button onClick={handleOpenCreate} className="gap-2">
             <Plus className="h-4 w-4" />
             Adicionar
@@ -140,6 +163,16 @@ export function ExpensesPage() {
       <CsvImportDialog
         open={importOpen}
         onOpenChange={setImportOpen}
+        onImportComplete={() => {
+          queryClient.invalidateQueries({ queryKey: ['expenses'] })
+          queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+        }}
+      />
+
+      {/* PDF Import dialog */}
+      <PdfImportDialog
+        open={pdfImportOpen}
+        onOpenChange={setPdfImportOpen}
         onImportComplete={() => {
           queryClient.invalidateQueries({ queryKey: ['expenses'] })
           queryClient.invalidateQueries({ queryKey: ['dashboard'] })
