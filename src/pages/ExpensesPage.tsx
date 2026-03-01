@@ -46,7 +46,10 @@ export function ExpensesPage() {
   const { splitExpense, unsplitExpense } = useSplitExpense()
   const { partner, isLinked } = usePartnership()
 
-  const total = useMemo(() => expenses.reduce((sum, e) => sum + Number(e.amount), 0), [expenses])
+  const total = useMemo(
+    () => expenses.reduce((sum, e) => sum + (view === 'mine' && e.is_shared ? Number(e.amount) / 2 : Number(e.amount)), 0),
+    [expenses, view]
+  )
 
   const handleOpenCreate = () => {
     setEditingExpense(null)
@@ -144,6 +147,7 @@ export function ExpensesPage() {
           unsplitExpense.mutate(expense.id)
         }}
         unsplittingExpenseId={unsplitExpense.isPending ? (unsplitExpense.variables ?? null) : null}
+        halveSharedAmounts={view === 'mine'}
         partnerName={partner?.display_name ?? null}
         isLinked={isLinked}
       />

@@ -12,6 +12,7 @@ interface ExpenseListProps {
   onSplit: (expense: Expense & { category: Category }) => void
   onUnsplit: (expense: Expense & { category: Category }) => void
   unsplittingExpenseId?: string | null
+  halveSharedAmounts?: boolean
   partnerName: string | null
   isLinked: boolean
 }
@@ -31,7 +32,7 @@ function SkeletonRow() {
   )
 }
 
-export function ExpenseList({ expenses, isLoading, currentUserId, onEdit, onDelete, onSplit, onUnsplit, unsplittingExpenseId, partnerName, isLinked }: ExpenseListProps) {
+export function ExpenseList({ expenses, isLoading, currentUserId, onEdit, onDelete, onSplit, onUnsplit, unsplittingExpenseId, halveSharedAmounts, partnerName, isLinked }: ExpenseListProps) {
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -63,6 +64,7 @@ export function ExpenseList({ expenses, isLoading, currentUserId, onEdit, onDele
           onUnsplit={onUnsplit}
           isOwn={expense.user_id === currentUserId}
           isUnsplitting={unsplittingExpenseId === expense.id}
+          halveSharedAmounts={halveSharedAmounts}
           partnerName={partnerName}
           isLinked={isLinked}
         />

@@ -12,11 +12,12 @@ interface ExpenseItemProps {
   onUnsplit: (expense: Expense & { category: Category }) => void
   isOwn: boolean
   isUnsplitting?: boolean
+  halveSharedAmounts?: boolean
   partnerName: string | null
   isLinked: boolean
 }
 
-export function ExpenseItem({ expense, onEdit, onDelete, onSplit, onUnsplit, isOwn, isUnsplitting = false, partnerName, isLinked }: ExpenseItemProps) {
+export function ExpenseItem({ expense, onEdit, onDelete, onSplit, onUnsplit, isOwn, isUnsplitting = false, halveSharedAmounts = false, partnerName, isLinked }: ExpenseItemProps) {
   const isSplitOriginal = expense.is_split && !expense.split_from_id
   const isSplitCopy = !!expense.split_from_id
   const isSplitRelated = isSplitOriginal || isSplitCopy
@@ -62,7 +63,9 @@ export function ExpenseItem({ expense, onEdit, onDelete, onSplit, onUnsplit, isO
       </div>
 
       <div className="flex items-center gap-3 flex-shrink-0">
-        <span className="font-semibold">{formatCurrency(expense.amount)}</span>
+        <span className="font-semibold">
+          {formatCurrency(halveSharedAmounts && expense.is_shared ? expense.amount / 2 : expense.amount)}
+        </span>
 
         {isOwn && (
           <div className="flex items-center gap-1">
