@@ -21,6 +21,7 @@ export interface Database {
           avatar_url?: string | null
           updated_at?: string
         }
+        Relationships: []
       }
       partnerships: {
         Row: {
@@ -40,6 +41,22 @@ export interface Database {
           status?: 'pending' | 'active' | 'dissolved'
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'partnerships_user1_id_fkey'
+            columns: ['user1_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'partnerships_user2_id_fkey'
+            columns: ['user2_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
       }
       invitations: {
         Row: {
@@ -59,6 +76,15 @@ export interface Database {
         Update: {
           status?: 'pending' | 'accepted' | 'expired' | 'cancelled'
         }
+        Relationships: [
+          {
+            foreignKeyName: 'invitations_inviter_id_fkey'
+            columns: ['inviter_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
       }
       categories: {
         Row: {
@@ -73,16 +99,17 @@ export interface Database {
           name: string
           icon?: string
           color?: string
-          partnership_id: string
-          created_by: string
+          partnership_id?: string | null
+          created_by?: string | null
         }
         Update: {
           name?: string
           icon?: string
           color?: string
-          partnership_id?: string
-          created_by?: string
+          partnership_id?: string | null
+          created_by?: string | null
         }
+        Relationships: []
       }
       expenses: {
         Row: {
@@ -121,17 +148,49 @@ export interface Database {
           partnership_id?: string | null
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: 'expenses_category_id_fkey'
+            columns: ['category_id']
+            isOneToOne: false
+            referencedRelation: 'categories'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'expenses_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'expenses_partnership_id_fkey'
+            columns: ['partnership_id']
+            isOneToOne: false
+            referencedRelation: 'partnerships'
+            referencedColumns: ['id']
+          },
+        ]
       }
     }
     Views: Record<string, never>
     Functions: {
       split_expense: {
         Args: { p_expense_id: string }
-        Returns: unknown
+        Returns: {
+          original_id: string
+          copy_id: string
+          creator_amount: number
+          partner_amount: number
+        }
       }
       unsplit_expense: {
         Args: { p_expense_id: string }
-        Returns: unknown
+        Returns: {
+          original_id: string
+          deleted_copy_id: string
+          restored_amount: number
+        }
       }
     }
     Enums: Record<string, never>

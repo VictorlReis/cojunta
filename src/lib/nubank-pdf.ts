@@ -94,7 +94,7 @@ async function extractTextFromPdf(file: File): Promise<string[]> {
         (item as TextItem).transform.length >= 6
       )
     }
-    const items = textContent.items.filter(isTextItem)
+    const items = (textContent.items as unknown[]).filter(isTextItem)
 
     if (items.length === 0) continue
 
