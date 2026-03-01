@@ -88,7 +88,7 @@ export function useInvitations() {
 
       const { error: partErr } = await supabase
         .from('partnerships')
-        .insert({ user1_id: invitation.inviter_id, user2_id: user!.id, status: 'active' })
+        .insert({ user1_id: user!.id, user2_id: invitation.inviter_id, status: 'active' })
       if (partErr) throw partErr
     },
     onSuccess: () => {
