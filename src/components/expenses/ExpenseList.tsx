@@ -9,6 +9,11 @@ interface ExpenseListProps {
   currentUserId: string
   onEdit: (expense: Expense & { category: Category }) => void
   onDelete: (id: string) => void
+  onSplit: (expense: Expense & { category: Category }) => void
+  onUnsplit: (expense: Expense & { category: Category }) => void
+  unsplittingExpenseId?: string | null
+  partnerName: string | null
+  isLinked: boolean
 }
 
 function SkeletonRow() {
@@ -26,7 +31,7 @@ function SkeletonRow() {
   )
 }
 
-export function ExpenseList({ expenses, isLoading, currentUserId, onEdit, onDelete }: ExpenseListProps) {
+export function ExpenseList({ expenses, isLoading, currentUserId, onEdit, onDelete, onSplit, onUnsplit, unsplittingExpenseId, partnerName, isLinked }: ExpenseListProps) {
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -54,7 +59,12 @@ export function ExpenseList({ expenses, isLoading, currentUserId, onEdit, onDele
           expense={expense}
           onEdit={onEdit}
           onDelete={onDelete}
+          onSplit={onSplit}
+          onUnsplit={onUnsplit}
           isOwn={expense.user_id === currentUserId}
+          isUnsplitting={unsplittingExpenseId === expense.id}
+          partnerName={partnerName}
+          isLinked={isLinked}
         />
       ))}
     </div>

@@ -94,6 +94,8 @@ export interface Database {
           amount: number
           expense_date: string
           is_shared: boolean
+          is_split: boolean
+          split_from_id: string | null
           created_at: string
           updated_at: string
         }
@@ -105,6 +107,8 @@ export interface Database {
           amount: number
           expense_date?: string
           is_shared?: boolean
+          is_split?: boolean
+          split_from_id?: string | null
         }
         Update: {
           category_id?: string
@@ -112,13 +116,24 @@ export interface Database {
           amount?: number
           expense_date?: string
           is_shared?: boolean
+          is_split?: boolean
+          split_from_id?: string | null
           partnership_id?: string | null
           updated_at?: string
         }
       }
     }
     Views: Record<string, never>
-    Functions: Record<string, never>
+    Functions: {
+      split_expense: {
+        Args: { p_expense_id: string }
+        Returns: unknown
+      }
+      unsplit_expense: {
+        Args: { p_expense_id: string }
+        Returns: unknown
+      }
+    }
     Enums: Record<string, never>
   }
 }

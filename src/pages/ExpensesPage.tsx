@@ -13,10 +13,13 @@ import { ExpenseFilters } from '@/components/expenses/ExpenseFilters'
 import { ExpenseList } from '@/components/expenses/ExpenseList'
 import { ExpenseForm } from '@/components/expenses/ExpenseForm'
 import { DeleteExpenseDialog } from '@/components/expenses/DeleteExpenseDialog'
+import { SplitConfirmDialog } from '@/components/expenses/SplitConfirmDialog'
 import { CsvImportDialog } from '@/components/expenses/CsvImportDialog'
 import { PdfImportDialog } from '@/components/expenses/PdfImportDialog'
 import { useExpenses } from '@/hooks/useExpenses'
 import { useAuth } from '@/hooks/useAuth'
+import { useSplitExpense } from '@/hooks/useSplitExpense'
+import { usePartnership } from '@/hooks/usePartnership'
 import { formatCurrency } from '@/lib/utils'
 import { exportExpensesToCsv } from '@/lib/csv'
 import type { Expense, Category, ExpenseInsert } from '@/types/database'
@@ -30,6 +33,7 @@ export function ExpensesPage() {
   const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null)
   const [importOpen, setImportOpen] = useState(false)
   const [pdfImportOpen, setPdfImportOpen] = useState(false)
+  const [splittingExpense, setSplittingExpense] = useState<(Expense & { category: Category }) | null>(null)
 
   const queryClient = useQueryClient()
 
@@ -39,6 +43,8 @@ export function ExpensesPage() {
     view,
   })
   const { user } = useAuth()
+  const { splitExpense, unsplitExpense } = useSplitExpense()
+  const { partner, isLinked } = usePartnership()
 
   const total = useMemo(() => expenses.reduce((sum, e) => sum + Number(e.amount), 0), [expenses])
 
@@ -133,6 +139,13 @@ export function ExpensesPage() {
         currentUserId={user?.id ?? ''}
         onEdit={handleOpenEdit}
         onDelete={(id) => setDeletingExpenseId(id)}
+        onSplit={(expense) => setSplittingExpense(expense)}
+        onUnsplit={(expense) => {
+          unsplitExpense.mutate(expense.id)
+        }}
+        unsplittingExpenseId={unsplitExpense.isPending ? (unsplitExpense.variables ?? null) : null}
+        partnerName={partner?.display_name ?? null}
+        isLinked={isLinked}
       />
 
       {/* Create/Edit dialog */}
@@ -157,6 +170,23 @@ export function ExpensesPage() {
           }
         }}
         isDeleting={deleteExpense.isPending}
+      />
+
+      {/* Split confirmation */}
+      <SplitConfirmDialog
+        open={!!splittingExpense}
+        onOpenChange={(open) => {
+          if (!open) setSplittingExpense(null)
+        }}
+        onConfirm={async () => {
+          if (splittingExpense) {
+            await splitExpense.mutateAsync(splittingExpense.id)
+            setSplittingExpense(null)
+          }
+        }}
+        isSplitting={splitExpense.isPending}
+        expenseAmount={splittingExpense?.amount ?? 0}
+        partnerName={partner?.display_name ?? ''}
       />
 
       {/* CSV Import dialog */}
